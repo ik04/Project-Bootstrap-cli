@@ -31,20 +31,17 @@ func runCommand(name string, args ...string) {
 
 // makeAndCd function to create a directory and change into it
 func makeAndCd(folder string) {
-	// Check if folder exists
 	if _, err := os.Stat(folder); !os.IsNotExist(err) {
 		color.Red("Folder %s already exists. Please choose a different name.", folder)
 		os.Exit(1)
 	}
 
-	// Create folder and change into it
 	runCommand("mkdir", folder)
 	if err := os.Chdir(folder); err != nil {
 		panic(err)
 	}
 }
 
-// main function
 func main() {
 	color.Blue("Choose setup:")
 	options := map[int64]string{
@@ -52,50 +49,45 @@ func main() {
 		2: "Remixjs with Laravel",
 	}
 
-	// Display options
 	for k, v := range options {
 		optionStr := fmt.Sprintf("%v) %v", k, v)
 		color.Cyan(optionStr)
 	}
 
-	// Create a new reader
 	reader := bufio.NewReader(os.Stdin)
 
-	// Read user option
 	optionStr, _ := getInput("Select your option: ", reader)
 	option, err := strconv.ParseInt(optionStr, 10, 64)
 	if err != nil {
 		panic(err)
 	}
 
-	// Print selected option
 	fmt.Println("Selected:", options[option])
 
-	// Read project name
+	currentDir, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error getting current directory:", err)
+		return
+	}
+
 	var projectName string
+	var projectPath string
 	for {
 		projectName, _ = getInput("Enter Project Name: ", reader)
-		if _, err := os.Stat(projectName); os.IsNotExist(err) {
+		projectPath = fmt.Sprintf("%s/%s", currentDir, projectName)
+		if _, err := os.Stat(projectPath); os.IsNotExist(err) {
 			break
 		}
-		color.Red("Folder %s already exists. Please choose a different name.", projectName)
+		color.Red("Folder %s already exists. Please choose a different name.", projectPath)
 	}
 
 	switch option {
 	case 1:
-		// Change to home directory
-		if err := os.Chdir(os.Getenv("HOME")); err != nil {
-			fmt.Fprintln(os.Stderr, "Error changing directory:", err)
-			return
-		}
-
-		// Setup Nextjs and Laravel
 		makeAndCd(projectName)
 		makeAndCd("client")
 		runCommand("npx", "create-next-app@latest", "web")
 		color.Blue("Nextjs Setup Finished!")
-		rootPath := fmt.Sprintf("%v/%v", os.Getenv("HOME"), projectName)
-		if err := os.Chdir(rootPath); err != nil {
+		if err := os.Chdir(projectPath); err != nil {
 			fmt.Fprintln(os.Stderr, "Error changing directory:", err)
 			return
 		}
@@ -109,11 +101,14 @@ func main() {
 		makeAndCd("client")
 		runCommand("npx", "create-remix@latest", "web")
 		color.Blue("Remixjs Setup Finished!")
-		makeAndCd("../server")
+		if err := os.Chdir(projectPath); err != nil {
+			fmt.Fprintln(os.Stderr, "Error changing directory:", err)
+			return
+		}
+		makeAndCd("server")
 		runCommand("laravel", "new", "rest")
 		color.Blue("Laravel Setup Finished!")
 		color.Green("Project Setup Finished!")
-
 	default:
 		fmt.Println("Invalid option")
 	}
