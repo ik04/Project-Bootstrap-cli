@@ -47,7 +47,8 @@ func main() {
 	options := map[int64]string{
 		1: "Nextjs with Laravel",
 		2: "Remixjs with Laravel",
-		3: "Nextjs with Nodejs",
+		3: "Nextjs with Nodejs (pnpm)",
+		4: "Nextjs with Nodejs (npm)",
 	}
 
 	for k, v := range options {
@@ -121,7 +122,20 @@ func main() {
 			return
 		}
 		makeAndCd("server")
-		runCommand("pnpm", "init", "-y")
+		runCommand("pnpm", "init")
+		color.Blue("Node Setup Finished!")
+		color.Green("Project Setup Finished!")
+	case 4:
+		makeAndCd(projectName)
+		makeAndCd("client")
+		runCommand("npx", "create-next-app@latest", "web")
+		color.Blue("Nextjs Setup Finished!")
+		if err := os.Chdir(projectPath); err != nil {
+			fmt.Fprintln(os.Stderr, "Error changing directory:", err)
+			return
+		}
+		makeAndCd("server")
+		runCommand("npm", "init","-y")
 		color.Blue("Node Setup Finished!")
 		color.Green("Project Setup Finished!")
 
