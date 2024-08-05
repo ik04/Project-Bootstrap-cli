@@ -49,6 +49,7 @@ func main() {
 		2: "Remixjs with Laravel",
 		3: "Nextjs with Nodejs (pnpm)",
 		4: "Nextjs with Nodejs (npm)",
+		5: "Laravel",
 	}
 
 	for k, v := range options {
@@ -137,6 +138,12 @@ func main() {
 		makeAndCd("server")
 		runCommand("npm", "init","-y")
 		color.Blue("Node Setup Finished!")
+		color.Green("Project Setup Finished!")
+	case 5:
+		makeAndCd(projectName)
+		makeAndCd("server")
+		runCommand("laravel", "new", "rest")
+		color.Blue("Laravel Setup Finished!")
 		color.Green("Project Setup Finished!")
 
 	default:
